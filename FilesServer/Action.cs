@@ -12,6 +12,7 @@ namespace FilesServer
     {
         public List<MyFile> MyFiles { get; set; }
         public Context FileContext;
+        public string RepositoryPath = @"C://FilesRepository";
 
         public Action()
         {
@@ -36,6 +37,10 @@ namespace FilesServer
                     context.SaveChanges();
                 }
             }
+        }
+        public void SaveToFileRepository()
+        {
+
         }
     }
 }

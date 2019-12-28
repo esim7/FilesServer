@@ -14,7 +14,7 @@ namespace DataAccess
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=A-104-13;Database=FilesApp;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer("Server=DESKTOP-RM1NBDJ;Database=FilesApp;Trusted_Connection=True;");
         }
     }
 }
