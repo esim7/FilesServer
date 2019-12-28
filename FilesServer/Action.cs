@@ -3,6 +3,7 @@ using Domain;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -12,7 +13,7 @@ namespace FilesServer
     {
         public List<MyFile> MyFiles { get; set; }
         public Context FileContext;
-        public string RepositoryPath = @"C://FilesRepository";
+        public string RepositoryPath = @"C:\FilesRepository\";
 
         public Action()
         {
@@ -38,9 +39,12 @@ namespace FilesServer
                 }
             }
         }
-        public void SaveToFileRepository()
+        public void SaveToFileRepository(byte[] data, string fileName)
         {
-
+            using (var fileStream = new FileStream(RepositoryPath + fileName, FileMode.Create, FileAccess.Write))
+            {
+                fileStream.Write(data, 0, data.Length);
+            }
         }
     }
 }

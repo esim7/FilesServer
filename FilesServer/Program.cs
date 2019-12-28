@@ -12,7 +12,9 @@ namespace FilesServer
         static void Main(string[] args)
         {
             Action MyAction = new Action();
-            int BufferSize = 0;
+
+            int BufferSize = 0; // перед отправкой файла передаю его размер и записываю тут, чтобы знать какого размера будет буффер на прием файла
+            string fileName = string.Empty; // для записи имени файла
 
             var listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 3231);
             listener.Start();
@@ -34,9 +36,12 @@ namespace FilesServer
                             resultText += System.Text.Encoding.UTF8.GetString(buffer);
                         }
                         Console.WriteLine($"Данные от клиента - {resultText}");
-                        var myFiles = JsonConvert.DeserializeObject<List<MyFile>>(resultText);
-                        MyAction.MyFiles = myFiles;
+                        var myFile = JsonConvert.DeserializeObject<MyFile>(resultText);
+                        MyAction.MyFiles.Add(myFile);
                         MyAction.AddToDB(MyAction.MyFiles);
+                        BufferSize = int.Parse(myFile.Size);
+                        fileName = myFile.Name;
+                        Console.WriteLine(BufferSize);
                     }                   
                 }
                 Console.WriteLine("Cоединение закрыто");
@@ -45,14 +50,9 @@ namespace FilesServer
                     Console.WriteLine("Входящее соединение");
                     using (var stream = client.GetStream())
                     {
-                        byte[] recv = new Byte[256];                       
-                        int bytes = stream.Read(recv, 0, recv.Length);
-                        byte[] a = new byte[bytes];
-                        for (int i = 0; i < bytes; i++)
-                        {
-                            a[i] = recv[i];
-                        }
-                        byte[] b = a;
+                        byte[] buffer = new byte[BufferSize];                       
+                        stream.Read(buffer, 0, buffer.Length);
+                        MyAction.SaveToFileRepository(buffer, fileName);
                     }
                 }
                 Console.WriteLine("Cоединение закрыто");
