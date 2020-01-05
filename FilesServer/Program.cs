@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace FilesServer
 {
@@ -22,9 +23,10 @@ namespace FilesServer
 
             while (true)
             {
+                //Action MyAction = new Action();
                 using (var client = listener.AcceptTcpClient())
                 {
-                    Console.WriteLine("Входящее соединение");
+                    //Console.WriteLine("Cоединение открыто");
                     using (var stream = client.GetStream())
                     {
                         var resultText = string.Empty;
@@ -35,27 +37,29 @@ namespace FilesServer
 
                             resultText += System.Text.Encoding.UTF8.GetString(buffer);
                         }
-                        Console.WriteLine($"Данные от клиента - {resultText}");
                         var myFile = JsonConvert.DeserializeObject<MyFile>(resultText);
+                        myFile.FilePathToServer = MyAction.RepositoryPath + myFile.Name;
                         MyAction.MyFiles.Add(myFile);
                         MyAction.AddToDB(MyAction.MyFiles);
-                        BufferSize = int.Parse(myFile.Size);
+                        //BufferSize = int.Parse(myFile.Size);
                         fileName = myFile.Name;
-                        Console.WriteLine(BufferSize);
+                        //Console.WriteLine(BufferSize);
                     }                   
                 }
-                Console.WriteLine("Cоединение закрыто");
+                //Console.WriteLine("Cоединение закрыто");
+                var myFiles = JsonConvert.SerializeObject(MyAction.MyFiles);
                 using (var client = listener.AcceptTcpClient())
                 {
-                    Console.WriteLine("Входящее соединение");
+                    //Console.WriteLine("Cоединение открыто");
                     using (var stream = client.GetStream())
                     {
                         byte[] buffer = new byte[BufferSize];                       
                         stream.Read(buffer, 0, buffer.Length);
                         MyAction.SaveToFileRepository(buffer, fileName);
+                        var answerData = System.Text.Encoding.UTF8.GetBytes(myFiles);
+                        stream.Write(answerData, 0, answerData.Length);
                     }
                 }
-                Console.WriteLine("Cоединение закрыто");
             }
         }
     }

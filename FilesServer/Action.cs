@@ -1,10 +1,13 @@
 ﻿using DataAccess;
 using Domain;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace FilesServer
@@ -14,11 +17,16 @@ namespace FilesServer
         public List<MyFile> MyFiles { get; set; }
         public Context FileContext;
         public string RepositoryPath = @"C:\FilesRepository\";
+        TcpListener Listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 3231);
 
         public Action()
         {
             MyFiles = new List<MyFile>();
             FileContext = new Context();
+            using (var context = new Context())
+            {
+                MyFiles = FileContext.MyFiles.ToList();
+            }
         }
 
         public void AddToDB(List<MyFile> files)
