@@ -19,7 +19,7 @@ namespace FilesServer
         public string RepositoryPath = @"C:\FilesRepository\";
         public TcpListener Listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 3231);
 
-        int BufferSize = 0;
+        int BufferSize = 0; // в буффер передаю размер файла перед передачей его на сервер
         string fileName = string.Empty; // для записи имени файла
 
         public Action()
@@ -131,8 +131,40 @@ namespace FilesServer
                     var myFile = FileContext.MyFiles.FirstOrDefault(x => x.Id == id);
                     var FileData = File.ReadAllBytes(myFile.FilePathToServer);
 
-
                     stream.Write(FileData, 0, FileData.Length);
+                }
+            }
+        }
+
+        public void DeleteFiles()
+        {
+            using (var client = Listener.AcceptTcpClient())
+            {
+                Console.WriteLine("Cоединение открыто");
+                using (var stream = client.GetStream())
+                {
+                    var resultText = string.Empty;
+                    while (stream.DataAvailable)
+                    {
+                        var buffer = new byte[24];
+                        stream.Read(buffer, 0, buffer.Length);
+                        resultText += System.Text.Encoding.UTF8.GetString(buffer).TrimEnd('\0');
+                    }
+                    Guid id = Guid.Parse(resultText);
+                    var myFile = FileContext.MyFiles.FirstOrDefault(x => x.Id == id);
+
+                    var fileInfo = new FileInfo(myFile.FilePathToServer);
+                    fileInfo.Delete();
+
+                    MyFiles = MyFiles.Where(x => x.Id != myFile.Id).ToList();
+
+                    FileContext.MyFiles.Remove(myFile);
+                    FileContext.SaveChanges();
+
+                    var myFiles = JsonConvert.SerializeObject(MyFiles);
+                    var answerData = System.Text.Encoding.UTF8.GetBytes(myFiles);
+
+                    stream.Write(answerData, 0, answerData.Length);
                 }
             }
         }

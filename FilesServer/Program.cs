@@ -16,11 +16,6 @@ namespace FilesServer
             Action MyAction = new Action();
             string ServerAction;
 
-            //int BufferSize = 0; // перед отправкой файла передаю его размер и записываю тут, чтобы знать какого размера будет буффер на прием файла
-            //string fileName = string.Empty; // для записи имени файла
-
-            //var listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 3231);
-            //listener.Start();
             Console.WriteLine("Сервер запущен");
             MyAction.GetDataToFirstConnection(); // Передача актуального списка файлов на файловом сервере при первом подключении клиента
             while (true)
@@ -48,7 +43,7 @@ namespace FilesServer
                 }
                 else if (ServerAction == "delete")
                 {
-
+                    MyAction.DeleteFiles();
                 }
             }
         }
